@@ -136,6 +136,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.tokens.AccessToken',
         'rest_framework_simplejwt.tokens.RefreshToken',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 4  # Number of items per page
 }
 
 from datetime import timedelta
@@ -162,3 +164,13 @@ AUTH_USER_MODEL = 'UserApp.UserData'
 #     'django.contrib.auth.backends.ModelBackend',  # Keep Django's default backend as fallback
 # ]
 # LOGIN_URL = '/User/login/'
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.example.com'  # Replace with your email provider's SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'rajashri26chhatrikar@gmail.com'  # Replace with your email
+EMAIL_HOST_PASSWORD = 'shri@570'  # Replace with your email password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+

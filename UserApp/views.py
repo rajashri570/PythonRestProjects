@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from .models import UserData
 from UserApp.serializers import UserDataSerializer
 from rest_framework_simplejwt.tokens import AccessToken
-from django.contrib.auth.decorators import login_required
+from rest_framework.pagination import PageNumberPagination
 
 create_user_input_schema = {
     "type": "object",
@@ -53,32 +53,49 @@ login_user_input_schema = {
     },
     "required": ["email", "password"]
 }
+#code for pegination concpts in django
+from rest_framework.pagination import PageNumberPagination
+
+class UserDataPagination(PageNumberPagination):
+    page_size = 3  # Number of items per page
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 @csrf_exempt
 @api_view(['POST'])
 def createUser(request):
-    if request.method == 'POST':
-        try:
-            validate(instance=request.data, schema=create_user_input_schema)
-        except ValidationError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        if request.method == 'POST':
+            try: 
+                validate(instance=request.data, schema=create_user_input_schema)
+            except ValidationError as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            
         
-
-        serializer = UserDataSerializer(data=request.data)
-        print(serializer)
-        if serializer.is_valid():
-            user_obj = serializer.save()
-            return Response ({"message":"success","id":user_obj.id}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return HttpResponse("Method Not Allowed", status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            serializer = UserDataSerializer(data=request.data)
+            print(serializer)
+            if serializer.is_valid():
+                user_obj = serializer.save()
+                sum = 4/0
+                return Response ({"message":"success","id":user_obj.id}, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return HttpResponse("Method Not Allowed", status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @csrf_exempt
 @api_view(['GET'])
 def listUser(request):
     if request.method == 'GET':
-        user_obj = UserData.objects.all()
-        serializer = UserDataSerializer(user_obj, many=True)
+        user_obj = UserData.objects.all().order_by('id')
+        
+        #pegination code for django
+        paginator = UserDataPagination()
+
+        paginated_users = paginator.paginate_queryset(user_obj, request)
+
+        serializer = UserDataSerializer(paginated_users, many=True) #chaged user_obj to paginated_users
         data = serializer.data
         # data ={"name":"rajashri","email":"raj@chatrikar@gmail.com","contact":"1234567890","address":"pune"}
 
